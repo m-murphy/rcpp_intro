@@ -1,0 +1,96 @@
+---
+title: "A Brief Introduction to Rcpp"
+output: html_notebook
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+# Setup `usethis`
+
+Before we begin using `Rcpp`, let's do some workflow setup. For this project, we'll use `usethis`, a very useful package for automating aspects of project and package development. We'll be using `usethis` to get this project running locally on your computer. Begin with opening RStudio and installing `usethis`
+
+```{r install_usethis, eval=FALSE}
+install.packages("usethis")
+```
+
+After installing, it is often useful to make `usethis` available immediately without having to call `library(usethis)`. Run the following
+
+```{r setup_usethis, eval=FALSE}
+library(usethis)
+use_usethis()
+```
+
+This will bring up your .Rprofile, a script that is run first thing every time R runs, and a short prompt containing code that will load `usethis` when in interactive mode (i.e., anytime you open RStudio).
+
+```{r setup_rprof, eval=FALSE}
+if (interactive()) {
+  suppressMessages(require(usethis))
+}
+```
+
+Now that you have installed `usethis`, restart your RStudio instance. The new instance should have `usethis` automatically loaded into the global namespace. Now that `usethis` is installed, we will now setup Github access. Run the following to configure, replacing user.name and user.email with your preferred authoring name, and email address used to login to [Github](https://www.Github.com)
+
+```{r setup_github, eval=FALSE}
+use_git_config(user.name = "Maxwell Murphy", user.email = "murphy2122@berkeley.edu")
+```
+
+Next we need to setup a personal access token (PAT) to access github if we want to be able to work collaboratively. A PAT is required if we want to be able to push or fork a repo using `usethis` and the integrated github tools in RStudio. Calling the following will bring up Github's PAT generator. Once the PAT is generated, be sure to copy the PAT before closing, this is your only chance to see it!
+
+```{r github_pat, eval=FALSE}
+browse_github_pat()
+```
+
+Now that you have your PAT copied to your clipboard, call the following to bring up your .Renviron file. This file contains environmental variables, such as API keys or PATs, that you don't want floating around and readily visible.
+
+```{r r_environment, eval=FALSE}
+edit_r_environ()
+```
+
+In the opened file, add a line like this, __but using your PAT__:
+
+```{bash save_github_pat}
+GITHUB_PAT=8c70fd8419398999c9ac5bacf3192882193cadf2
+```
+
+Make sure to save the file with a newline at the end, otherwise you may end up with very difficult to diagnose bugs. Restart R and confirm your PAT is available by calling the following:
+
+```{r check_github_pat, eval=FALSE}
+Sys.getenv("GITHUB_PAT")
+```
+
+
+```{Rcpp gibbs_sampler}
+#include <Rcpp.h>
+
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+NumericMatrix gibbs_fast(int N, int thin) {
+  
+  NumericMatrix mat(N, 2);
+  double x = 0;
+  double y = 0;
+  
+  for(int i = 0; i < N; i++) {
+    for(int j = 0; j < thin; j++) {
+      x = R::rgamma(3.0, 1.0 / (y * y + 4));
+      y = R::rnorm(1.0 / (x + 1), 1.0 / sqrt(2 * x + 2));
+    }
+    
+    mat(i, 0) = x;
+    mat(i, 1) = y;
+  }
+  
+  return(mat);
+}
+```
+
+```{r}
+as.tibble(gibbs_fast(100, 1000))
+```
+
+
