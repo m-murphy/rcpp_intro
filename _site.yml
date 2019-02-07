@@ -1,0 +1,12 @@
+name: "rcpp_intro"
+output_dir: "docs"
+navbar:
+  title: "Rcpp Introduction"
+  left:
+    - text: "Home"
+      href: index.html
+    - text: "Setup"
+      href: "setup.html"
+output:
+  html_document:
+    theme: cosmo

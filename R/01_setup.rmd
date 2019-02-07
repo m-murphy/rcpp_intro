@@ -1,15 +1,9 @@
 ---
-title: "A Brief Introduction to Rcpp"
-output: html_notebook
-
+title: "Setup `usethis`"
+output:
+  html_document:
+    df_print: paged
 ---
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-library(tidyverse)
-```
-
-# Setup `usethis`
 
 Before we begin using `Rcpp`, let's do some workflow setup. For this project, we'll use `usethis`, a very useful package for automating aspects of project and package development. We'll be using `usethis` to get this project running locally on your computer. Begin with opening RStudio and installing `usethis`
 
@@ -62,35 +56,8 @@ Make sure to save the file with a newline at the end, otherwise you may end up w
 Sys.getenv("GITHUB_PAT")
 ```
 
+With github access setup, call the following to clone and open this project on your own computer
 
-```{Rcpp gibbs_sampler}
-#include <Rcpp.h>
-
-using namespace Rcpp;
-
-// [[Rcpp::export]]
-NumericMatrix gibbs_fast(int N, int thin) {
-  
-  NumericMatrix mat(N, 2);
-  double x = 0;
-  double y = 0;
-  
-  for(int i = 0; i < N; i++) {
-    for(int j = 0; j < thin; j++) {
-      x = R::rgamma(3.0, 1.0 / (y * y + 4));
-      y = R::rnorm(1.0 / (x + 1), 1.0 / sqrt(2 * x + 2));
-    }
-    
-    mat(i, 0) = x;
-    mat(i, 1) = y;
-  }
-  
-  return(mat);
-}
+```{r get_project, eval=FALSE}
+create_from_github('m-murphy/rcpp_intro', protocol = 'https')
 ```
-
-```{r}
-as.tibble(gibbs_fast(100, 1000))
-```
-
-
