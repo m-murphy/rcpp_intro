@@ -1,8 +1,5 @@
 ---
 title: "Setup `usethis`"
-output:
-  html_document:
-    df_print: paged
 ---
 
 Before we begin using `Rcpp`, let's do some workflow setup. For this project, we'll use `usethis`, a very useful package for automating aspects of project and package development. We'll be using `usethis` to get this project running locally on your computer. Begin with opening RStudio and installing `usethis`

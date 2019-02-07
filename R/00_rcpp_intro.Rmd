@@ -1,8 +1,5 @@
 ---
 title: "A Brief Introduction to Rcpp"
-output:
-  html_document:
-    df_print: paged
 ---
 
 ```{r setup, include=FALSE}
