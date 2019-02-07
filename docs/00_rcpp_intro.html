@@ -11,7 +11,7 @@
 
 
 
-<title>Home</title>
+<title>A Brief Introduction to Rcpp</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -184,7 +184,7 @@ $(document).ready(function () {
   <a href="index.html">Home</a>
 </li>
 <li>
-  <a href="setup.html">Setup</a>
+  <a href="01_setup.html">Setup</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -198,12 +198,49 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Home</h1>
+<h1 class="title toc-ignore">A Brief Introduction to Rcpp</h1>
 
 </div>
 
 
+<pre class="cpp"><code>#include &lt;Rcpp.h&gt;
 
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+NumericMatrix gibbs_fast(int N, int thin) {
+  
+  NumericMatrix mat(N, 2);
+  double x = 0;
+  double y = 0;
+  
+  for(int i = 0; i &lt; N; i++) {
+    for(int j = 0; j &lt; thin; j++) {
+      x = R::rgamma(3.0, 1.0 / (y * y + 4));
+      y = R::rnorm(1.0 / (x + 1), 1.0 / sqrt(2 * x + 2));
+    }
+    
+    mat(i, 0) = x;
+    mat(i, 1) = y;
+  }
+  
+  return(mat);
+}</code></pre>
+<pre class="r"><code>as.tibble(gibbs_fast(100, 1000))</code></pre>
+<pre><code>## # A tibble: 100 x 2
+##        V1     V2
+##     &lt;dbl&gt;  &lt;dbl&gt;
+##  1 0.350  0.533 
+##  2 0.0518 0.387 
+##  3 0.477  0.807 
+##  4 0.961  0.0985
+##  5 0.137  0.802 
+##  6 0.0719 1.23  
+##  7 0.583  0.233 
+##  8 0.886  0.681 
+##  9 0.940  0.998 
+## 10 0.588  0.844 
+## # ... with 90 more rows</code></pre>
 
 
 

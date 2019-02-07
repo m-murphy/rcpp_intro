@@ -1,12 +1,13 @@
 name: "rcpp_intro"
-output_dir: "docs"
+output_dir: "../../docs"
 navbar:
   title: "Rcpp Introduction"
   left:
     - text: "Home"
-      href: index.html
+      href: "index.html"
     - text: "Setup"
-      href: "setup.html"
+      href: "01_setup.html"
 output:
   html_document:
-    theme: cosmo
+    theme: "cosmo"
+

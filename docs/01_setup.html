@@ -11,7 +11,7 @@
 
 
 
-<title>A Brief Introduction to Rcpp</title>
+<title>Setup usethis</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -184,7 +184,7 @@ $(document).ready(function () {
   <a href="index.html">Home</a>
 </li>
 <li>
-  <a href="setup.html">Setup</a>
+  <a href="01_setup.html">Setup</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -198,49 +198,32 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">A Brief Introduction to Rcpp</h1>
+<h1 class="title toc-ignore">Setup <code>usethis</code></h1>
 
 </div>
 
 
-<pre class="cpp"><code>#include &lt;Rcpp.h&gt;
-
-using namespace Rcpp;
-
-// [[Rcpp::export]]
-NumericMatrix gibbs_fast(int N, int thin) {
-  
-  NumericMatrix mat(N, 2);
-  double x = 0;
-  double y = 0;
-  
-  for(int i = 0; i &lt; N; i++) {
-    for(int j = 0; j &lt; thin; j++) {
-      x = R::rgamma(3.0, 1.0 / (y * y + 4));
-      y = R::rnorm(1.0 / (x + 1), 1.0 / sqrt(2 * x + 2));
-    }
-    
-    mat(i, 0) = x;
-    mat(i, 1) = y;
-  }
-  
-  return(mat);
+<p>Before we begin using <code>Rcpp</code>, let’s do some workflow setup. For this project, we’ll use <code>usethis</code>, a very useful package for automating aspects of project and package development. We’ll be using <code>usethis</code> to get this project running locally on your computer. Begin with opening RStudio and installing <code>usethis</code></p>
+<pre class="r"><code>install.packages(&quot;usethis&quot;)</code></pre>
+<p>After installing, it is often useful to make <code>usethis</code> available immediately without having to call <code>library(usethis)</code>. Run the following</p>
+<pre class="r"><code>library(usethis)
+use_usethis()</code></pre>
+<p>This will bring up your .Rprofile, a script that is run first thing every time R runs, and a short prompt containing code that will load <code>usethis</code> when in interactive mode (i.e., anytime you open RStudio).</p>
+<pre class="r"><code>if (interactive()) {
+  suppressMessages(require(usethis))
 }</code></pre>
-<pre class="r"><code>as.tibble(gibbs_fast(100, 1000))</code></pre>
-<pre><code>## # A tibble: 100 x 2
-##       V1       V2
-##    &lt;dbl&gt;    &lt;dbl&gt;
-##  1 0.798 -0.186  
-##  2 0.695  0.0683 
-##  3 0.874  0.495  
-##  4 0.322 -0.00926
-##  5 0.651  0.290  
-##  6 0.804 -0.114  
-##  7 0.115  0.939  
-##  8 0.757  1.05   
-##  9 0.436  0.466  
-## 10 0.343  1.77   
-## # ... with 90 more rows</code></pre>
+<p>Now that you have installed <code>usethis</code>, restart your RStudio instance. The new instance should have <code>usethis</code> automatically loaded into the global namespace. Now that <code>usethis</code> is installed, we will now setup Github access. Run the following to configure, replacing user.name and user.email with your preferred authoring name, and email address used to login to <a href="https://www.Github.com">Github</a></p>
+<pre class="r"><code>use_git_config(user.name = &quot;Maxwell Murphy&quot;, user.email = &quot;murphy2122@berkeley.edu&quot;)</code></pre>
+<p>Next we need to setup a personal access token (PAT) to access github if we want to be able to work collaboratively. A PAT is required if we want to be able to push or fork a repo using <code>usethis</code> and the integrated github tools in RStudio. Calling the following will bring up Github’s PAT generator. Once the PAT is generated, be sure to copy the PAT before closing, this is your only chance to see it!</p>
+<pre class="r"><code>browse_github_pat()</code></pre>
+<p>Now that you have your PAT copied to your clipboard, call the following to bring up your .Renviron file. This file contains environmental variables, such as API keys or PATs, that you don’t want floating around and readily visible.</p>
+<pre class="r"><code>edit_r_environ()</code></pre>
+<p>In the opened file, add a line like this, <strong>but using your PAT</strong>:</p>
+<pre class="bash"><code>GITHUB_PAT=8c70fd8419398999c9ac5bacf3192882193cadf2</code></pre>
+<p>Make sure to save the file with a newline at the end, otherwise you may end up with very difficult to diagnose bugs. Restart R and confirm your PAT is available by calling the following:</p>
+<pre class="r"><code>Sys.getenv(&quot;GITHUB_PAT&quot;)</code></pre>
+<p>With github access setup, call the following to clone and open this project on your own computer</p>
+<pre class="r"><code>create_from_github(&#39;m-murphy/rcpp_intro&#39;, protocol = &#39;https&#39;)</code></pre>
 
 
 
