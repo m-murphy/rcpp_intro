@@ -1,0 +1,25 @@
+---
+title: "First Steps with Rcpp"
+---
+
+To test our compiler and make sure that Rcpp is installed, execute the following to run and compile a short Rcpp snippet
+
+```{r test_compiler, code=readLines(here('R', 'code', 'compiler_test.R'))}
+```
+
+The above code, although seemingly short, is in fact doing a whole lot in the background. This call to `evalCpp` is taking the passed in string, constructing the necessary boilerplate code for a minimal C++ program, then compiling and executing the resulting program. 
+
+It's also possible to compile a string into a function that is then accessible to you in R
+
+```{r inline_func, code=readLines(here('R', 'code', 'first_cpp_func.R'))}
+```
+
+One of the primary reasons to use Rcpp is for gains in speed as we're working at a lower abstraction level. Let's see how this cpp function compares to the R version
+
+```{r inline_benchmark, code=readLines(here('R', 'code', 'inline_benchmark.R'))}
+```
+
+The C++ version of `is_odd` is about twice as fast as the R version.
+
+It's easy to see, though, that this is inline usage of strings is not a scalable way of writing complex C++ code to be called from R. Luckily, Rcpp works very well using the original C++ file format `.cpp`
+

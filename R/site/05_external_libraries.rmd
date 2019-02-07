@@ -1,0 +1,17 @@
+---
+title: "External Libraries"
+---
+One of the greatest benefits of using `Rcpp` is it's ability to interface with other libraries written in C++ or C. There is a long history of highly performant, well written routines written in C++ and C, such as `Armadillo` and `Eigen` for linear algebra, `Intel MKL` for highly optimized math routines, and  `GSL`, the GNU Scientific Library, a large, extremely well tested and used set of mathematical functions, amongst many others. Let's take a look into how we might integrate `Armadillo` into a high performance workflow.
+
+## Armadillo
+Note Mac Users: this may not work immediately on your computer and may involve installing fortran libraries.
+
+```{Rcpp fast_lm, code=readLines(here('R', 'code', 'fast_lm.cpp'))}
+```
+
+Here we've defined a routine that calls out to `Armadillo` and returns the parameters of interest, namely, the coefficients of the model, the std. error of the model, and the residuals of the fit, minimizing any extra work that would be done. Let's benchmark it's performance against `lm.fit()`.
+
+```{r test_lm, code=readLines(here('R', 'code', 'fast_lm_test.r'))}
+```
+
+Here we have an example of when it might `Rcpp` might not make a huge difference, the two perform comparably. This isn't terribly surprising, `lm.fit` is heavily used and therefore has been heavily optimized, so we would expect it to perform as such. However, third party libraries often contain more obscure functionality that hasn't made it's way into R, offering an avenue for highly performant code without having to write the core algorithms yourself.

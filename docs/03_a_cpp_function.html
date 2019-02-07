@@ -11,7 +11,7 @@
 
 
 
-<title>Setup</title>
+<title>A C++ Function</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -308,40 +308,42 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Setup</h1>
+<h1 class="title toc-ignore">A C++ Function</h1>
 
 </div>
 
 
-<div id="usethis" class="section level1">
-<h1><code>usethis</code></h1>
-<p>Before we begin using <code>Rcpp</code>, let’s do some workflow setup. For this project, we’ll use <code>usethis</code>, a very useful package for automating aspects of project and package development. We’ll be using <code>usethis</code> to get this project running locally on your computer. Begin with opening RStudio and installing <code>usethis</code></p>
-<pre class="r"><code>install.packages(&quot;usethis&quot;)</code></pre>
-<p>After installing, it is often useful to make <code>usethis</code> available immediately without having to call <code>library(usethis)</code>. Run the following</p>
-<pre class="r"><code>library(usethis)
-use_usethis()</code></pre>
-<p>This will bring up your .Rprofile, a script that is run first thing every time R runs, and a short prompt containing code that will load <code>usethis</code> when in interactive mode (i.e., anytime you open RStudio).</p>
-<pre class="r"><code>if (interactive()) {
-  suppressMessages(require(usethis))
+<p>For more complex functions, or even whole sets of functions, it’s fairly clear that the string format is not going to be extremely useful. As an alternative, we can either place the code into a <code>.cpp</code> file, or into an <code>Rcpp</code> chunk in an R markdown file, with only marginally more boilerplate code. The following code is an example of how we might do this.</p>
+<pre class="cpp"><code>#include &lt;Rcpp.h&gt;
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+NumericVector convolve_cpp(const NumericVector&amp; a,
+                           const NumericVector&amp; b) {
+
+  // Declare loop counters, vector sizes, and total length
+  int i = 0;
+  int j = 0;
+  int na = a.size();
+  int nb = b.size();
+  int nab = na + nb;
+
+  // Create vector filled with 0
+  NumericVector ab(nab);
+
+  // Crux of the algorithm
+  for(i = 0; i &lt; na; i++) {
+    for(j = 0; j &lt; nb; j++) {
+      ab[i + j] += a[i] * b[j];
+    }
+  }
+
+  // Return result
+  return ab;
 }</code></pre>
-<p>Now that you have installed <code>usethis</code>, restart your RStudio instance. The new instance should have <code>usethis</code> automatically loaded into the global namespace.</p>
-</div>
-<div id="github" class="section level1">
-<h1>Github</h1>
-<p>Now that <code>usethis</code> is installed, we will now setup Github access. Run the following to configure, replacing user.name and user.email with your preferred authoring name, and email address used to login to <a href="https://www.Github.com">Github</a></p>
-<pre class="r"><code>use_git_config(user.name = &quot;Maxwell Murphy&quot;, user.email = &quot;murphy2122@berkeley.edu&quot;)</code></pre>
-<p>Next we need to setup a personal access token (PAT) to access github if we want to be able to work collaboratively. A PAT is required if we want to be able to push or fork a repo using <code>usethis</code> and the integrated github tools in RStudio. Calling the following will bring up Github’s PAT generator. Once the PAT is generated, be sure to copy the PAT before closing, this is your only chance to see it!</p>
-<pre class="r"><code>browse_github_pat()</code></pre>
-<p>Now that you have your PAT copied to your clipboard, call the following to bring up your .Renviron file. This file contains environmental variables, such as API keys or PATs, that you don’t want floating around and readily visible.</p>
-<pre class="r"><code>edit_r_environ()</code></pre>
-<p>In the opened file, add a line like this, <strong>but using your PAT</strong>:</p>
-<pre class="bash"><code>GITHUB_PAT=8c70fd8419398999c9ac5bacf3192882193cadf2</code></pre>
-<p>Make sure to save the file with a newline at the end, otherwise you may end up with very difficult to diagnose bugs. Restart R and confirm your PAT is available by calling the following:</p>
-<pre class="r"><code>Sys.getenv(&quot;GITHUB_PAT&quot;)</code></pre>
-<p>With github access setup, call the following to clone and open this project on your own computer. Replace <code>destdir</code> with wherever you like to store code, otherwise the default is your desktop. Set fork to <code>FALSE</code> if you prefer to only clone the repo and not fork the repo.</p>
-<pre class="r"><code>create_from_github(&#39;m-murphy/rcpp_intro&#39;, destdir = &#39;~/Workspace&#39;, protocol = &#39;https&#39;, fork = TRUE)</code></pre>
-<p>More information about using <code>usethis</code> may be found <a href="https://usethis.r-lib.org/index.html">here</a></p>
-</div>
+<p>If we were to place this code in a separate <code>convolve.cpp</code> file to be used in our R script, we would need to call the following to make it available to our session.</p>
+<pre class="r"><code>Rcpp::sourceCpp(&quot;convolve.cpp&quot;)</code></pre>
+<p>This is not necessary if you simply place the code into an <code>Rmd</code> chunk with a <code>Rcpp</code> specifier.</p>
 
 
 

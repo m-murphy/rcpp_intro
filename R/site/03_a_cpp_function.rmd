@@ -1,0 +1,14 @@
+---
+title: "A C++ Function"
+---
+For more complex functions, or even whole sets of functions, it's fairly clear that the string format is not going to be extremely useful. As an alternative, we can either place the code into a `.cpp` file, or into an `Rcpp` chunk in an R markdown file, with only marginally more boilerplate code. The following code is an example of how we might do this. 
+```{Rcpp first_cpp_func, code=readLines(here('R', 'code', 'convolve.cpp'))}
+```
+
+If we were to place this code in a separate `convolve.cpp` file to be used in our R script, we would need to call the following to make it available to our session.
+
+```{r cpp_source_demo, eval=FALSE}
+Rcpp::sourceCpp("convolve.cpp")
+```
+
+This is not necessary if you simply place the code into an `Rmd` chunk with a `Rcpp` specifier.

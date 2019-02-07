@@ -11,7 +11,7 @@
 
 
 
-<title>Setup</title>
+<title>External Libraries</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -308,39 +308,62 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Setup</h1>
+<h1 class="title toc-ignore">External Libraries</h1>
 
 </div>
 
 
-<div id="usethis" class="section level1">
-<h1><code>usethis</code></h1>
-<p>Before we begin using <code>Rcpp</code>, let’s do some workflow setup. For this project, we’ll use <code>usethis</code>, a very useful package for automating aspects of project and package development. We’ll be using <code>usethis</code> to get this project running locally on your computer. Begin with opening RStudio and installing <code>usethis</code></p>
-<pre class="r"><code>install.packages(&quot;usethis&quot;)</code></pre>
-<p>After installing, it is often useful to make <code>usethis</code> available immediately without having to call <code>library(usethis)</code>. Run the following</p>
-<pre class="r"><code>library(usethis)
-use_usethis()</code></pre>
-<p>This will bring up your .Rprofile, a script that is run first thing every time R runs, and a short prompt containing code that will load <code>usethis</code> when in interactive mode (i.e., anytime you open RStudio).</p>
-<pre class="r"><code>if (interactive()) {
-  suppressMessages(require(usethis))
+<p>One of the greatest benefits of using <code>Rcpp</code> is it’s ability to interface with other libraries written in C++ or C. There is a long history of highly performant, well written routines written in C++ and C, such as <code>Armadillo</code> and <code>Eigen</code> for linear algebra, <code>Intel MKL</code> for highly optimized math routines, and <code>GSL</code>, the GNU Scientific Library, a large, extremely well tested and used set of mathematical functions, amongst many others. Let’s take a look into how we might integrate <code>Armadillo</code> into a high performance workflow.</p>
+<div id="armadillo" class="section level2">
+<h2>Armadillo</h2>
+<p>Note Mac Users: this may not work immediately on your computer and may involve installing fortran libraries.</p>
+<pre class="cpp"><code>#include &lt;RcppArmadillo.h&gt;
+// [[Rcpp::depends(RcppArmadillo)]]
+
+// Compute coefficients and their standard error during multiple linear
+// regression given a design matrix X containing N observations with P
+// regressors and a vector y containing of N responses
+
+// [[Rcpp::export]]
+Rcpp::List fastLm(const arma::mat&amp; X, const arma::colvec&amp; y) {
+  // Dimension information
+  int n = X.n_rows;
+  int p = X.n_cols;
+
+  // Fit model y ~ X
+  arma::colvec coef = arma::solve(X, y);
+
+  // Compute the residuals
+  arma::colvec res  = y - X*coef;
+
+  // Obtain the estimated variance of the random error
+  double s2 = std::inner_product(res.begin(), res.end(),
+                                 res.begin(), 0.0)/(n - p);
+
+  // Obtain the standard error matrix of coefficients
+  arma::colvec std_err = arma::sqrt(s2 *
+    arma::diagvec(arma::pinv(X.t()*X)));
+
+  // Create a named list with the above quantities
+  return Rcpp::List::create(Rcpp::Named(&quot;coefficients&quot;) = coef,
+                            Rcpp::Named(&quot;stderr&quot;)       = std_err,
+                            Rcpp::Named(&quot;df.residual&quot;)  = n - p    );
 }</code></pre>
-<p>Now that you have installed <code>usethis</code>, restart your RStudio instance. The new instance should have <code>usethis</code> automatically loaded into the global namespace.</p>
-</div>
-<div id="github" class="section level1">
-<h1>Github</h1>
-<p>Now that <code>usethis</code> is installed, we will now setup Github access. Run the following to configure, replacing user.name and user.email with your preferred authoring name, and email address used to login to <a href="https://www.Github.com">Github</a></p>
-<pre class="r"><code>use_git_config(user.name = &quot;Maxwell Murphy&quot;, user.email = &quot;murphy2122@berkeley.edu&quot;)</code></pre>
-<p>Next we need to setup a personal access token (PAT) to access github if we want to be able to work collaboratively. A PAT is required if we want to be able to push or fork a repo using <code>usethis</code> and the integrated github tools in RStudio. Calling the following will bring up Github’s PAT generator. Once the PAT is generated, be sure to copy the PAT before closing, this is your only chance to see it!</p>
-<pre class="r"><code>browse_github_pat()</code></pre>
-<p>Now that you have your PAT copied to your clipboard, call the following to bring up your .Renviron file. This file contains environmental variables, such as API keys or PATs, that you don’t want floating around and readily visible.</p>
-<pre class="r"><code>edit_r_environ()</code></pre>
-<p>In the opened file, add a line like this, <strong>but using your PAT</strong>:</p>
-<pre class="bash"><code>GITHUB_PAT=8c70fd8419398999c9ac5bacf3192882193cadf2</code></pre>
-<p>Make sure to save the file with a newline at the end, otherwise you may end up with very difficult to diagnose bugs. Restart R and confirm your PAT is available by calling the following:</p>
-<pre class="r"><code>Sys.getenv(&quot;GITHUB_PAT&quot;)</code></pre>
-<p>With github access setup, call the following to clone and open this project on your own computer. Replace <code>destdir</code> with wherever you like to store code, otherwise the default is your desktop. Set fork to <code>FALSE</code> if you prefer to only clone the repo and not fork the repo.</p>
-<pre class="r"><code>create_from_github(&#39;m-murphy/rcpp_intro&#39;, destdir = &#39;~/Workspace&#39;, protocol = &#39;https&#39;, fork = TRUE)</code></pre>
-<p>More information about using <code>usethis</code> may be found <a href="https://usethis.r-lib.org/index.html">here</a></p>
+<p>Here we’ve defined a routine that calls out to <code>Armadillo</code> and returns the parameters of interest, namely, the coefficients of the model, the std. error of the model, and the residuals of the fit, minimizing any extra work that would be done. Let’s benchmark it’s performance against <code>lm.fit()</code>.</p>
+<pre class="r"><code>X = matrix(c(rep(1, 300), runif(300, 0, 50)), nrow = 300)
+y = 5 + 3 * X[,2] + rnorm(300, 0, 5)
+
+results &lt;- microbenchmark(
+  lm_r = lm.fit(X, y),
+  lm_cpp = fastLm(X, y)
+)
+
+results</code></pre>
+<pre><code>## Unit: microseconds
+##    expr    min      lq     mean  median      uq      max neval cld
+##    lm_r 57.253 67.4845  97.3162 76.7865 86.8895  867.441   100   a
+##  lm_cpp 14.362 21.0940 101.5664 28.2840 33.4220 3415.079   100   a</code></pre>
+<p>Here we have an example of when it might <code>Rcpp</code> might not make a huge difference, the two perform comparably. This isn’t terribly surprising, <code>lm.fit</code> is heavily used and therefore has been heavily optimized, so we would expect it to perform as such. However, third party libraries often contain more obscure functionality that hasn’t made it’s way into R, offering an avenue for highly performant code without having to write the core algorithms yourself.</p>
 </div>
 
 

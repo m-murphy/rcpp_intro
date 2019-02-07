@@ -1,0 +1,23 @@
+---
+title: "Benchmarking and Profiling"
+---
+Here we have two implementations of a Gibbs sampler, the first in pure R, the second using Rcpp. Let's compare and contrast how these are written
+
+## R Implementation
+
+```{r gibbs_sample_r, code=readLines(here('R', 'code', 'gibbs.R'))}
+```
+
+This is a straightforward implementation of a Gibbs sampler which involves sampling from conditional distributions repeatedly to generate samples from the target distribution. Why might this perform poorly as a pure R implementation? Profile the code to see what could be going on.
+
+## C++ Implementation
+
+```{Rcpp gibbs_sampler_cpp, code=readLines(here('R', 'code', 'gibbs.cpp'))}
+```
+
+The C++ implementation looks almost exactly the same, except for a few differences in indexing and initialization. Now, how do they each perform? Let's go ahead and run a benchmark comparing the two.
+
+```{r gibbs_benchmark, code=readLines(here('R', 'code', 'gibbs_benchmark.R'))}
+```
+
+The difference is staggering, the C++ code ends up nearly 40x faster than the pure R implementation. This is an example of why you should avoid `for` loops in R.

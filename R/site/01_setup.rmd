@@ -1,6 +1,7 @@
 ---
-title: "Setup `usethis`"
+title: "Setup"
 ---
+# `usethis`
 
 Before we begin using `Rcpp`, let's do some workflow setup. For this project, we'll use `usethis`, a very useful package for automating aspects of project and package development. We'll be using `usethis` to get this project running locally on your computer. Begin with opening RStudio and installing `usethis`
 
@@ -23,7 +24,11 @@ if (interactive()) {
 }
 ```
 
-Now that you have installed `usethis`, restart your RStudio instance. The new instance should have `usethis` automatically loaded into the global namespace. Now that `usethis` is installed, we will now setup Github access. Run the following to configure, replacing user.name and user.email with your preferred authoring name, and email address used to login to [Github](https://www.Github.com)
+Now that you have installed `usethis`, restart your RStudio instance. The new instance should have `usethis` automatically loaded into the global namespace.
+
+# Github
+
+Now that `usethis` is installed, we will now setup Github access. Run the following to configure, replacing user.name and user.email with your preferred authoring name, and email address used to login to [Github](https://www.Github.com)
 
 ```{r setup_github, eval=FALSE}
 use_git_config(user.name = "Maxwell Murphy", user.email = "murphy2122@berkeley.edu")
@@ -53,8 +58,11 @@ Make sure to save the file with a newline at the end, otherwise you may end up w
 Sys.getenv("GITHUB_PAT")
 ```
 
-With github access setup, call the following to clone and open this project on your own computer
+With github access setup, call the following to clone and open this project on your own computer. Replace `destdir` with wherever you like to store code, otherwise the default is your desktop. Set fork to `FALSE` if you prefer to only clone the repo and not fork the repo.
 
 ```{r get_project, eval=FALSE}
-create_from_github('m-murphy/rcpp_intro', protocol = 'https')
+create_from_github('m-murphy/rcpp_intro', destdir = '~/Workspace', protocol = 'https', fork = TRUE)
 ```
+
+More information about using `usethis` may be found [here](https://usethis.r-lib.org/index.html)
+
